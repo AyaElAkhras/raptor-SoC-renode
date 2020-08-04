@@ -2,6 +2,7 @@
 Support for Raptor (Cortex M0 based SoC) in Renode 
 
 Raptor Peripherals
+
 ○ Two multi-function 32-bit PWM/timers
 
 ○ One SPI master controller (AHB bus)
