@@ -1,0 +1,38 @@
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x000004000
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 72000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m0"
+    nvic: nvic
+
+uart0: UART.Raptor_UART @ sysbus 0x40200000   
+    -> nvic@16
+
+uart1: UART.Raptor_UART @ sysbus 0x40300000  
+    -> nvic@17
+
+
+
+
+
+
+// Questions:
+/*
+1) Flash is external so no point of having it here??
+2) What is the address of the IRQ controller???
+3) Is there NVIC??
+4) WriteChar from base class to my class (that inherits from it),
+	I will override it
+
+5) Do we need other types of write??
+
+6) What is the size of the FIFO (when is it full)?????
+
+
+*/
+
