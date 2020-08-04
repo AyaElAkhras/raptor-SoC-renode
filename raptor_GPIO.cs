@@ -11,6 +11,15 @@ All writes to reg_gpio_data are registered.
 All reads from reg_gpio_data are immediate.
 */
 
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using Antmicro.Renode.Core;
+using Antmicro.Renode.Core.Structure.Registers;
+using Antmicro.Renode.Logging;
+using Antmicro.Renode.Peripherals.Bus;
+using Antmicro.Renode.Utilities;
+
 namespace Antmicro.Renode.Peripherals.GPIOPort
 {
     public class RaptorGPIO : BaseGPIOPort
