@@ -27,10 +27,10 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
         }
 
 
- 		private readonly Type type;
-		private const int NumberOfPorts = 16;  // to be confirmed 
-		
-		private enum Registers
+	private readonly Type type;
+	private const int NumberOfPorts = 16;  // to be confirmed 
+
+	private enum Registers
         {
             GPIO_DATA = 0x80000000,  // GPIO input/output (lower 16 bits) GPIO output readback (upper 16 bits)
             GPIO_ENB = 0x80000004, // GPIO output enable (0 = output, 1 = input)
@@ -47,6 +47,5 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
         }
 
        
-
     }
 }
