@@ -16,7 +16,12 @@ UART0 uses IRQ0 (INT16) and UART1 uses IRQ1 (INT17).
 */
 
 using System;
+using Antmicro.Renode.Core;
+using Antmicro.Renode.Logging;
+using Antmicro.Renode.Peripherals.Bus;
 using System.Collections.Generic;
+using Antmicro.Migrant;
+using Antmicro.Renode.Core.Structure.Registers;
 
 namespace Antmicro.Renode.Peripherals.UART
 {
