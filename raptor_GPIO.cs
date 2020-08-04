@@ -24,11 +24,12 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
 {
     public class RaptorGPIO : BaseGPIOPort
     {
-    	public RaptorGPIO(Machine machine) : base(machine, NumberOfPorts)
+    	public RaptorGPIO(Machine machine) : base(machine, NumberOfPins)
         {
 
         }
 
+	// Need to do register mapping
 
         public override void Reset()
         {
@@ -37,7 +38,7 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
 
 
 	private readonly Type type;
-	private const int NumberOfPorts = 1;  // to be confirmed 
+	private const int NumberOfPins = 16;  // to be confirmed 
 
 	private enum Registers
         {
