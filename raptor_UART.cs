@@ -29,32 +29,32 @@ namespace Antmicro.Renode.Peripherals.UART
 		}
 
 		public override void WriteChar(byte value)
-        {
-        	if(receiveFifo.Count == 10)  // fifo is full, so block until empty
         	{
-				// todo: block execution until a place is emptied
+			if(receiveFifo.Count == 10)  // fifo is full, so block until empty
+			{
+					// todo: block execution until a place is emptied
+			}
+
+			receiveFifo.Enqueue(value);
+			// todo: raise an interrupt
+
         	}
 
-        	receiveFifo.Enqueue(value);
-        	// todo: raise an interrupt
+		public byte ReadChar()
+		{
+			if(sendFifo.Count == 0)
+			{
+				// todo: block execution until a it becomes not empty
+			}
+			return sendFifo.Dequeue();
+		}
 
-        }
-
-        public byte ReadChar()
-        {
-        	if(sendFifo.Count == 0)
-        	{
-        		// todo: block execution until a it becomes not empty
-        	}
-        	return sendFifo.Dequeue();
-        }
-
-        public override void Reset()   
-        {
-            base.Reset();
-            receiveFifo.Clear();
-            sendFifo.Clear();
-        }
+		public override void Reset()   
+		{
+		    base.Reset();
+		    receiveFifo.Clear();
+		    sendFifo.Clear();
+		}
 
 		// todo
 		// Process read and write with interrupt
@@ -78,13 +78,13 @@ namespace Antmicro.Renode.Peripherals.UART
 		}
 
 		public override Bits StopBits
-    	{
-	        get 
-	        {
-	        	// 1 stop bit 
-	        	return Bits.One;
-	        }
-	    }	
+		{
+			get 
+			{
+				// 1 stop bit 
+				return Bits.One;
+			}
+		}	
 
 		public override uint BaudRate
 		{
