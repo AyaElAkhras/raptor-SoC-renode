@@ -28,7 +28,7 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
 
 
 	private readonly Type type;
-	private const int NumberOfPorts = 16;  // to be confirmed 
+	private const int NumberOfPorts = 1;  // to be confirmed 
 
 	private enum Registers
         {
