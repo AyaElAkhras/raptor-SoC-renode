@@ -26,16 +26,18 @@ namespace Antmicro.Renode.Peripherals.UART
 {
 	public class Raptor_UART : UARTBase, IDoubleWordPeripheral, IKnownSize
 	{
-		public Raptor_UART(Machine machine, uint frequency = 50000000) : base(machine)
+		public Raptor_UART(Machine machine, uint fifo_size = 10, uint frequency = 50000000) : base(machine)
 		{
 			this.frequency = frequency;
+			this.fifo_size = fifo_size;
 						
 			var registersMap = new Dictionary<long, DoubleWordRegister>
 		        {
 				{(long)Registers.TransmitData, new DoubleWordRegister(this)
+				    .WithFlag(31, valueProviderCallback: _ => Count == this.fifo_size, name: "FULL")
 				    .WithValueField(0, 8, FieldMode.Write, writeCallback: (_, b) =>
 				    {
-					if(transmitEnable.Value) // Register field providing a boolean value declared below
+					if(Count < this.fifo_size) // transmit only if the fifo isn't full
 					{
 					    this.TransmitCharacter((byte)b);    // field in the UARTBase class
 					    UpdateInterrupts();
@@ -46,7 +48,7 @@ namespace Antmicro.Renode.Peripherals.UART
 					}
 				    }, name: "DATA")
 				    .WithTag("RESERVED", 8, 23)
-				    .WithFlag(31, valueProviderCallback: _ => false, name: "FULL")
+				    
 				},
 
 				{(long)Registers.ReceiveData, new DoubleWordRegister(this)
@@ -67,8 +69,7 @@ namespace Antmicro.Renode.Peripherals.UART
 			};			
 			
 			registers = new DoubleWordRegisterCollection(this, registersMap);
-			IRQ = new GPIO();   // todo: double check the interrupts
-
+			IRQ = new GPIO();   
 			Reset();
 			
 			
@@ -112,9 +113,19 @@ namespace Antmicro.Renode.Peripherals.UART
 		}
 
 		private readonly uint frequency;  // supposing this is the sysclk
+		private readonly uint fifo_size; // max size of the transmission fifo
 		
 		private readonly IFlagRegisterField transmitEnable;
 		private readonly IFlagRegisterField receiveEnable;
+		
+		private readonly IValueRegisterField transmitWatermarkLevel;
+		private readonly IValueRegisterField receiveWatermarkLevel;
+		private readonly IFlagRegisterField transmitWatermarkInterruptPending;
+		private readonly IFlagRegisterField receiveWatermarkInterruptPending;
+		private readonly IFlagRegisterField transmitWatermarkInterruptEnable;
+		private readonly IFlagRegisterField receiveWatermarkInterruptEnable;
+
+
 
 		public override Parity ParityBit
 		{
@@ -138,7 +149,7 @@ namespace Antmicro.Renode.Peripherals.UART
 			get
 			{
 				// baud rate = sysclk/163*1
-				return frequency / 163*16;
+				return this.frequency / 163*16;
 			}
 		}
 		
