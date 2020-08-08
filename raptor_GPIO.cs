@@ -22,25 +22,115 @@ using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Peripherals.GPIOPort
 {
-    public class RaptorGPIO : BaseGPIOPort
+    public class RaptorGPIO : BaseGPIOPort, IDoubleWordPeripheral, IKnownSize
     {
     	public RaptorGPIO(Machine machine) : base(machine, NumberOfPins)
         {
+		locker = new object();
+		
+// 		var registersMap = new Dictionary<long, DoubleWordRegister>
+//             	{
+// 			{(long)Registers.PinValue, new DoubleWordRegister(this)
+// 			    .WithValueField(0, 32,
+// 				valueProviderCallback: _ =>
+// 				{
+// 				    var readOperations = pins.Select(x => (x.pinOperation & Operation.Read) != 0);
+// 				    var result = readOperations.Zip(State, (operation, state) => operation && state);
+// 				    return BitHelper.GetValueFromBitsArray(result);
+// 				})
+// 			},
 
+// 			{(long)Registers.PinInputEnable, new DoubleWordRegister(this)
+// 			    .WithValueField(0, 32,
+// 				writeCallback: (_, val) =>
+// 				{
+// 				    var bits = BitHelper.GetBits(val);
+// 				    for(var i = 0; i < bits.Length; i++)
+// 				    {
+// 					Misc.FlipFlag(ref pins[i].pinOperation, Operation.Read, bits[i]);
+// 				    }
+// 				})
+// 			},
+
+// 			{(long)Registers.PinOutputEnable, new DoubleWordRegister(this)
+// 			    .WithValueField(0, 32,
+// 				    writeCallback: (_, val) =>
+// 				{
+// 				    var bits = BitHelper.GetBits(val);
+// 				    for (var i = 0; i < bits.Length; i++)
+// 				    {
+// 					Misc.FlipFlag(ref pins[i].pinOperation, Operation.Write, bits[i]);
+// 				    }
+// 				})
+// 			},
+
+// 			{(long)Registers.OutputPortValue, new DoubleWordRegister(this)
+// 			    .WithValueField(0, 32,
+// 				writeCallback: (_, val) =>
+// 				{
+// 				    lock(locker)
+// 				    {
+// 					var bits = BitHelper.GetBits(val);
+// 					for(var i = 0; i < bits.Length; i++)
+// 					{
+// 					    if((pins[i].pinOperation & Operation.Write) != 0)
+// 					    {
+// 						State[i] = bits[i];
+// 						Connections[i].Set(bits[i]);
+// 					    }
+// 					}
+// 				    }
+// 				})
+// 			},
+
+// 			{(long)Registers.RiseInterruptPending, new DoubleWordRegister(this)
+// 			    .WithValueField(0, 32, writeCallback: (_, val) =>
+// 			    {
+// 				lock(locker)
+// 				{
+// 				    var bits = BitHelper.GetBits(val);
+// 				    for(var i = 0; i < bits.Length; i++)
+// 				    {
+// 					if(bits[i])
+// 					{
+// 					    Connections[i].Set(State[i]);
+// 					}
+// 				    }
+// 				}
+// 			    })
+// 			}
+// 		};
+
+		registers = new DoubleWordRegisterCollection(this, registersMap);
         }
-
-	// Need to do register mapping
-
-        public override void Reset()
+	
+	
+	public uint ReadDoubleWord(long offset)
         {
-            base.Reset();
+            return RegistersCollection.Read(offset);
         }
 
+        public void WriteDoubleWord(long offset, uint value)
+        {
+            RegistersCollection.Write(offset, value);
+        }
+	
+	public override void Reset()
+        {
+            lock(locker)
+            {
+                base.Reset();
+                registers.Reset();
+            }
+        }
+	
+	private readonly DoubleWordRegisterCollection registers;
+        private readonly object locker;   // for blocking until the process is done 
+        // private readonly Pin[] pins;
 
-	private readonly Type type;
 	private const int NumberOfPins = 16;  // to be confirmed 
 
-	private enum Registers
+	private enum Registers : long
         {
             GPIO_DATA = 0x80000000,  // GPIO input/output (lower 16 bits) GPIO output readback (upper 16 bits)
             GPIO_ENB = 0x80000004, // GPIO output enable (0 = output, 1 = input)
@@ -49,13 +139,7 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
         }
 
 
-        public enum Type
-        {
-            In,
-            Out,
-            InOut
-        }
-
+        
        
     }
 }
