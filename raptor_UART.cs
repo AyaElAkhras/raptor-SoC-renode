@@ -64,7 +64,9 @@ namespace Antmicro.Renode.Peripherals.UART
 					}
 					return character;
 				    }, name: "DATA")
-				    .WithTag("RESERVED", 8, 23)
+				     .WithFlag(0, out transmitWatermarkInterruptEnable, changeCallback: (_, __) => UpdateInterrupts(), name: "TXWM")
+                    		     .WithFlag(1, out receiveWatermarkInterruptEnable, changeCallback: (_, __) => UpdateInterrupts(), name: "RXWM")
+				     .WithTag("RESERVED", 8, 23)
 				 },
 			};			
 			
@@ -105,8 +107,8 @@ namespace Antmicro.Renode.Peripherals.UART
 		{
 			lock(innerLock)
 			{
-				transmitWatermarkInterruptPending.Value = (transmitWatermarkInterruptEnable.Value && transmitWatermarkLevel.Value > 0);
-				receiveWatermarkInterruptPending.Value = (receiveWatermarkInterruptEnable.Value && Count > receiveWatermarkLevel.Value);
+				transmitWatermarkInterruptPending.Value = (transmitWatermarkInterruptEnable.Value);
+				receiveWatermarkInterruptPending.Value = (receiveWatermarkInterruptEnable.Value);
 
 				IRQ.Set(transmitWatermarkInterruptPending.Value || receiveWatermarkInterruptPending.Value);
 			}
@@ -115,13 +117,13 @@ namespace Antmicro.Renode.Peripherals.UART
 		private readonly uint frequency;  // supposing this is the sysclk
 		private readonly uint fifo_size; // max size of the transmission fifo
 		
-		private readonly IFlagRegisterField transmitEnable;
-		private readonly IFlagRegisterField receiveEnable;
+// 		private readonly IFlagRegisterField transmitEnable;
+// 		private readonly IFlagRegisterField receiveEnable;
 		
-		private readonly IValueRegisterField transmitWatermarkLevel;
-		private readonly IValueRegisterField receiveWatermarkLevel;
-		private readonly IFlagRegisterField transmitWatermarkInterruptPending;
-		private readonly IFlagRegisterField receiveWatermarkInterruptPending;
+// 		private readonly IValueRegisterField transmitWatermarkLevel;
+// 		private readonly IValueRegisterField receiveWatermarkLevel;
+// 		private readonly IFlagRegisterField transmitWatermarkInterruptPending;
+// 		private readonly IFlagRegisterField receiveWatermarkInterruptPending;
 		private readonly IFlagRegisterField transmitWatermarkInterruptEnable;
 		private readonly IFlagRegisterField receiveWatermarkInterruptEnable;
 
