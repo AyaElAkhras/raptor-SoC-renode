@@ -1,1 +1,3 @@
+Tips for adding SoC support in Renode:
+
 
