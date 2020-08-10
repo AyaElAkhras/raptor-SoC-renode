@@ -33,34 +33,42 @@ namespace Antmicro.Renode.Peripherals.UART
 						
 			var registersMap = new Dictionary<long, DoubleWordRegister>
 		        {
-				{(long)Registers.TransmitData, new DoubleWordRegister(this)
+				{(long)Registers.Data, new DoubleWordRegister(this)
 				    .WithValueField(0, 8, FieldMode.Write, writeCallback: (_, b) =>
 				    {
-					this.TransmitCharacter((byte)b);    // field in the UARTBase class
-// 					UpdateInterrupts();		
-// 					else
-// 					{
-// 					    this.Log(LogLevel.Warning, "Trying to transmit '{1}' (0x{0}), but the transmitter is disabled", b, (char) b);
-// 					}
+				    	// transmission happens instantaneously 
+					this.TransmitCharacter((byte)b);    // method in the UARTBase class
 				    }, name: "TXDATA")
-				    .WithFlag(31, valueProviderCallback: _ => false, name: "FULL")
-				    
-				},
-
-				{(long)Registers.ReceiveData, new DoubleWordRegister(this)
-				    // the "EMPTY" flag MUST be declared before "DATA" value field because 'Count' value
-				    // might change as a result of dequeuing a character; otherwise if the queue was of
-				    // length 1, the read of this register would return both the character and "EMPTY" flag
+// 				    .WithFlag(30, valueProviderCallback: _ => false, name: "FULL")
 				    .WithFlag(31, valueProviderCallback: _ => Count == 0, name: "EMPTY")   // Count gets updated with the Queue size in UARTBase
-				    .WithValueField(0, 8, FieldMode.Read, readCallback: (_, __) => UpdateInterrupts(), valueProviderCallback: _ =>
+				    
+				   // generates an interrupt, which is driven HIGH whenever there is data to be read on the receiving FIFO
+				    .WithValueField(8, 8, FieldMode.Read, readCallback: (_, __) => UpdateInterrupts(), valueProviderCallback: _ =>
 				    {
+				    	// Reading from the FIFO while empty would block the execution till the UART receives data
 					if(!TryGetCharacter(out var character))  // function in the UARTBase that returns False if the Queue is empty
 					{
 					    this.Log(LogLevel.Warning, "Trying to read data from empty receive fifo");
 					}
 					return character;
 				    }, name: "RXDATA")
-				 }
+				     .WithTag("RESERVED", 16, 15) // no implementation for the remaining fields 
+				}
+				
+// 				{(long)Registers.ReceiveData, new DoubleWordRegister(this)
+// 				    // the "EMPTY" flag MUST be declared before "DATA" value field because 'Count' value
+// 				    // might change as a result of dequeuing a character; otherwise if the queue was of
+// 				    // length 1, the read of this register would return both the character and "EMPTY" flag
+// 				    .WithFlag(31, valueProviderCallback: _ => Count == 0, name: "EMPTY")   // Count gets updated with the Queue size in UARTBase
+// 				    .WithValueField(0, 8, FieldMode.Read, readCallback: (_, __) => UpdateInterrupts(), valueProviderCallback: _ =>
+// 				    {
+// 					if(!TryGetCharacter(out var character))  // function in the UARTBase that returns False if the Queue is empty
+// 					{
+// 					    this.Log(LogLevel.Warning, "Trying to read data from empty receive fifo");
+// 					}
+// 					return character;
+// 				    }, name: "RXDATA")
+// 				 }
 			};			
 			
 			registers = new DoubleWordRegisterCollection(this, registersMap);
@@ -101,11 +109,12 @@ namespace Antmicro.Renode.Peripherals.UART
 
 		}
 		
+		
 		private void UpdateInterrupts()
 		{
 			lock(innerLock)
 			{
-				IRQ.Set(Count>0);
+				IRQ.Set(Count>0);  // interrupt is high whenever there is data to be read on the receiving FIFO, it is cleared when all data is read so when Count = 0
 			}
 		}
 
@@ -135,14 +144,13 @@ namespace Antmicro.Renode.Peripherals.UART
 			get
 			{
 				// baud rate = sysclk/163*1
-				return this.frequency / 163*16;
+				return (this.frequency / 163*16);
 			}
 		}
 		
-		private enum Registers : long   // Need to check the addresses 
+		private enum Registers : long  
 		{
-			TransmitData = 0x0,
-			ReceiveData = 0x04
+			Data = 0x00   // a single register for the rx and tx data bits
 			// CLK_DIV = 0x08   // todo
 		}
 		
