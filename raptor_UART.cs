@@ -42,7 +42,7 @@ namespace Antmicro.Renode.Peripherals.UART
 // 					{
 // 					    this.Log(LogLevel.Warning, "Trying to transmit '{1}' (0x{0}), but the transmitter is disabled", b, (char) b);
 // 					}
-				    }, name: "DATA")
+				    }, name: "TXDATA")
 				    .WithFlag(31, valueProviderCallback: _ => false, name: "FULL")
 				    
 				},
@@ -59,8 +59,8 @@ namespace Antmicro.Renode.Peripherals.UART
 					    this.Log(LogLevel.Warning, "Trying to read data from empty receive fifo");
 					}
 					return character;
-				    }, name: "DATA")
-				 },
+				    }, name: "RXDATA")
+				 }
 			};			
 			
 			registers = new DoubleWordRegisterCollection(this, registersMap);
