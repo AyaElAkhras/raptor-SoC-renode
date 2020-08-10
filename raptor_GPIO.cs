@@ -35,22 +35,22 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
 		          .WithValueField(0, 16,
 				readCallback: (_, _) =>
 				{
-// 				    var readOperations = pins.Select(x => (x.pinOperation & Operation.Read) != 0);
-// 				    var result = readOperations.Zip(State, (operation, state) => operation && state);
-// 				    return BitHelper.GetValueFromBitsArray(result);
+				    var readOperations = pins.Select(x => (x.pinOperation & Operation.Read) != 0);  // select pins configured as input pins
+				    var result = readOperations.Zip(State, (operation, state) => operation && state);
+				    return BitHelper.GetValueFromBitsArray(result);   // register value after adjusting the read value for read pins 
 				})
 				
-			   .WithValueField(16, 16,
-				readCallback: (_, _) =>
-				{
-// 				    var readOperations = pins.Select(x => (x.pinOperation & Operation.Read) != 0);
-// 				    var result = readOperations.Zip(State, (operation, state) => operation && state);
-// 				    return BitHelper.GetValueFromBitsArray(result);
-				})
+// 			   .WithValueField(16, 16,
+// 				readCallback: (_, _) =>
+// 				{
+// // 				    var readOperations = pins.Select(x => (x.pinOperation & Operation.Read) != 0);
+// // 				    var result = readOperations.Zip(State, (operation, state) => operation && state);
+// // 				    return BitHelper.GetValueFromBitsArray(result);
+// 				})
 		      },
 		      
 		       {(long)Registers.GPIO_ENB, new DoubleWordRegister(this)
-		          .WithFlag(0, writeCallback: (_, val) =>
+		          .WithValueField(0,16, writeCallback: (_, val) =>
                          {
 			 	if(val == 1) // input
 				{
@@ -61,38 +61,40 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
 				
 				}
 			 })
-			  .WithTag("RESERVED", 1, 31)   
-		      },
+			  .WithTag("RESERVED", 16, 16)   
+		      }
 		      
-		       {(long)Registers.GPIO_PUB, new DoubleWordRegister(this)
-		          .WithFlag(0, writeCallback: (_, val) =>
-                         {
-			 	if(val == 0) // pullup
-				{
-				
-				}
-				else  // none
-				{
-				
-				}
-			 })
-			  .WithTag("RESERVED", 1, 31)   
-		      },
+		      // todo: pullup and pulldown
 		      
-		       {(long)Registers.GPIO_PDB, new DoubleWordRegister(this)
-		          .WithFlag(0, writeCallback: (_, val) =>
-                         {
-			 	if(val == 0) // pulldown
-				{
+// 		       {(long)Registers.GPIO_PUB, new DoubleWordRegister(this)
+// 		          .WithValueField(0, 16, writeCallback: (_, val) =>
+//                          {
+// 			 	if(val == 0) // pullup
+// 				{
 				
-				}
-				else  // none
-				{
+// 				}
+// 				else  // none
+// 				{
 				
-				}
-			 })
-			  .WithTag("RESERVED", 1, 31)   
-		      } 
+// 				}
+// 			 })
+// 			  .WithTag("RESERVED", 16, 16)   
+// 		      },
+		      
+// 		       {(long)Registers.GPIO_PDB, new DoubleWordRegister(this)
+// 		          .WithValueField(0, 16, writeCallback: (_, val) =>
+//                          {
+// 			 	if(val == 0) // pulldown
+// 				{
+				
+// 				}
+// 				else  // none
+// 				{
+				
+// 				}
+// 			 })
+// 			  .WithTag("RESERVED", 16, 16)   
+// 		      } 
 		
 		};
 
@@ -108,6 +110,15 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
         public void WriteDoubleWord(long offset, uint value)
         {
             RegistersCollection.Write(offset, value);
+        }
+	
+	public override void OnGPIO(int number, bool value)   // Note that Connections and State are fields in the BaseGPIOPort class
+        {
+            lock(locker)
+            {
+                base.OnGPIO(number, value);
+                Connections[number].Set(value);
+            }
         }
 	
 	public override void Reset()
