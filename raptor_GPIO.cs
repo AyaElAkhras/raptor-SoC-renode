@@ -27,79 +27,74 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
     	public RaptorGPIO(Machine machine) : base(machine, NumberOfPins)
         {
 		locker = new object();
+		pins = new Pin[NumberOfPins];
 		
-// 		var registersMap = new Dictionary<long, DoubleWordRegister>
-//             	{
-// 			{(long)Registers.PinValue, new DoubleWordRegister(this)
-// 			    .WithValueField(0, 32,
-// 				valueProviderCallback: _ =>
-// 				{
+		var registersMap = new Dictionary<long, DoubleWordRegister>
+		{
+		     {(long)Registers.GPIO_DATA, new DoubleWordRegister(this)
+		          .WithValueField(0, 16,
+				readCallback: (_, _) =>
+				{
 // 				    var readOperations = pins.Select(x => (x.pinOperation & Operation.Read) != 0);
 // 				    var result = readOperations.Zip(State, (operation, state) => operation && state);
 // 				    return BitHelper.GetValueFromBitsArray(result);
-// 				})
-// 			},
-
-// 			{(long)Registers.PinInputEnable, new DoubleWordRegister(this)
-// 			    .WithValueField(0, 32,
-// 				writeCallback: (_, val) =>
-// 				{
-// 				    var bits = BitHelper.GetBits(val);
-// 				    for(var i = 0; i < bits.Length; i++)
-// 				    {
-// 					Misc.FlipFlag(ref pins[i].pinOperation, Operation.Read, bits[i]);
-// 				    }
-// 				})
-// 			},
-
-// 			{(long)Registers.PinOutputEnable, new DoubleWordRegister(this)
-// 			    .WithValueField(0, 32,
-// 				    writeCallback: (_, val) =>
-// 				{
-// 				    var bits = BitHelper.GetBits(val);
-// 				    for (var i = 0; i < bits.Length; i++)
-// 				    {
-// 					Misc.FlipFlag(ref pins[i].pinOperation, Operation.Write, bits[i]);
-// 				    }
-// 				})
-// 			},
-
-// 			{(long)Registers.OutputPortValue, new DoubleWordRegister(this)
-// 			    .WithValueField(0, 32,
-// 				writeCallback: (_, val) =>
-// 				{
-// 				    lock(locker)
-// 				    {
-// 					var bits = BitHelper.GetBits(val);
-// 					for(var i = 0; i < bits.Length; i++)
-// 					{
-// 					    if((pins[i].pinOperation & Operation.Write) != 0)
-// 					    {
-// 						State[i] = bits[i];
-// 						Connections[i].Set(bits[i]);
-// 					    }
-// 					}
-// 				    }
-// 				})
-// 			},
-
-// 			{(long)Registers.RiseInterruptPending, new DoubleWordRegister(this)
-// 			    .WithValueField(0, 32, writeCallback: (_, val) =>
-// 			    {
-// 				lock(locker)
-// 				{
-// 				    var bits = BitHelper.GetBits(val);
-// 				    for(var i = 0; i < bits.Length; i++)
-// 				    {
-// 					if(bits[i])
-// 					{
-// 					    Connections[i].Set(State[i]);
-// 					}
-// 				    }
-// 				}
-// 			    })
-// 			}
-// 		};
+				})
+				
+			   .WithValueField(16, 16,
+				readCallback: (_, _) =>
+				{
+// 				    var readOperations = pins.Select(x => (x.pinOperation & Operation.Read) != 0);
+// 				    var result = readOperations.Zip(State, (operation, state) => operation && state);
+// 				    return BitHelper.GetValueFromBitsArray(result);
+				})
+		      },
+		      
+		       {(long)Registers.GPIO_ENB, new DoubleWordRegister(this)
+		          .WithFlag(0, writeCallback: (_, val) =>
+                         {
+			 	if(val == 1) // input
+				{
+				
+				}
+				else  // output
+				{
+				
+				}
+			 })
+			  .WithTag("RESERVED", 1, 31)   
+		      },
+		      
+		       {(long)Registers.GPIO_PUB, new DoubleWordRegister(this)
+		          .WithFlag(0, writeCallback: (_, val) =>
+                         {
+			 	if(val == 0) // pullup
+				{
+				
+				}
+				else  // none
+				{
+				
+				}
+			 })
+			  .WithTag("RESERVED", 1, 31)   
+		      },
+		      
+		       {(long)Registers.GPIO_PDB, new DoubleWordRegister(this)
+		          .WithFlag(0, writeCallback: (_, val) =>
+                         {
+			 	if(val == 0) // pulldown
+				{
+				
+				}
+				else  // none
+				{
+				
+				}
+			 })
+			  .WithTag("RESERVED", 1, 31)   
+		      } 
+		
+		};
 
 		registers = new DoubleWordRegisterCollection(this, registersMap);
         }
@@ -126,9 +121,22 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
 	
 	private readonly DoubleWordRegisterCollection registers;
         private readonly object locker;   // for blocking until the process is done 
-        // private readonly Pin[] pins;
+        private readonly Pin[] pins;
 
 	private const int NumberOfPins = 16;  // to be confirmed 
+	
+	private struct Pin
+        {
+            public Operation pinOperation;
+        }
+
+        [Flags]
+        private enum Operation : long
+        {
+            Disabled = 0x0,
+            Read = 0x1,
+            Write = 0x2
+        }
 
 	private enum Registers : long
         {
