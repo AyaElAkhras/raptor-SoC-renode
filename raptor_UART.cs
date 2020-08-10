@@ -34,20 +34,16 @@ namespace Antmicro.Renode.Peripherals.UART
 			var registersMap = new Dictionary<long, DoubleWordRegister>
 		        {
 				{(long)Registers.TransmitData, new DoubleWordRegister(this)
-				    .WithFlag(31, valueProviderCallback: _ => Count == this.fifo_size, name: "FULL")
 				    .WithValueField(0, 8, FieldMode.Write, writeCallback: (_, b) =>
 				    {
-					if(Count < this.fifo_size) // transmit only if the fifo isn't full
-					{
-					    this.TransmitCharacter((byte)b);    // field in the UARTBase class
-					    UpdateInterrupts();
-					}
-					else
-					{
-					    this.Log(LogLevel.Warning, "Trying to transmit '{1}' (0x{0}), but the transmitter is disabled", b, (char) b);
-					}
+					this.TransmitCharacter((byte)b);    // field in the UARTBase class
+// 					UpdateInterrupts();		
+// 					else
+// 					{
+// 					    this.Log(LogLevel.Warning, "Trying to transmit '{1}' (0x{0}), but the transmitter is disabled", b, (char) b);
+// 					}
 				    }, name: "DATA")
-				    .WithTag("RESERVED", 8, 23)
+				    .WithFlag(31, valueProviderCallback: _ => false, name: "FULL")
 				    
 				},
 
@@ -56,7 +52,7 @@ namespace Antmicro.Renode.Peripherals.UART
 				    // might change as a result of dequeuing a character; otherwise if the queue was of
 				    // length 1, the read of this register would return both the character and "EMPTY" flag
 				    .WithFlag(31, valueProviderCallback: _ => Count == 0, name: "EMPTY")   // Count gets updated with the Queue size in UARTBase
-				    .WithValueField(0, 8, FieldMode.Read, valueProviderCallback: _ =>
+				    .WithValueField(0, 8, FieldMode.Read, readCallback: (_, __) => UpdateInterrupts(), valueProviderCallback: _ =>
 				    {
 					if(!TryGetCharacter(out var character))  // function in the UARTBase that returns False if the Queue is empty
 					{
@@ -64,9 +60,6 @@ namespace Antmicro.Renode.Peripherals.UART
 					}
 					return character;
 				    }, name: "DATA")
-				     .WithFlag(0, out transmitWatermarkInterruptEnable, changeCallback: (_, __) => UpdateInterrupts(), name: "TXWM")
-                    		     .WithFlag(1, out receiveWatermarkInterruptEnable, changeCallback: (_, __) => UpdateInterrupts(), name: "RXWM")
-				     .WithTag("RESERVED", 8, 23)
 				 },
 			};			
 			
@@ -95,38 +88,29 @@ namespace Antmicro.Renode.Peripherals.UART
 		
 		public override void Reset()   
 		{
-		    base.Reset();
-		    
-		    registers.Reset();
-		    UpdateInterrupts();
-		   
+			base.Reset();
+
+			registers.Reset();
+			UpdateInterrupts();
+
 		}
 		
+		protected override void CharWritten()
+		{
+			UpdateInterrupts();
+
+		}
 		
 		private void UpdateInterrupts()
 		{
 			lock(innerLock)
 			{
-				transmitWatermarkInterruptPending.Value = (transmitWatermarkInterruptEnable.Value);
-				receiveWatermarkInterruptPending.Value = (receiveWatermarkInterruptEnable.Value);
-
-				IRQ.Set(transmitWatermarkInterruptPending.Value || receiveWatermarkInterruptPending.Value);
+				IRQ.Set(Count>0);
 			}
 		}
 
 		private readonly uint frequency;  // supposing this is the sysclk
 		private readonly uint fifo_size; // max size of the transmission fifo
-		
-// 		private readonly IFlagRegisterField transmitEnable;
-// 		private readonly IFlagRegisterField receiveEnable;
-		
-// 		private readonly IValueRegisterField transmitWatermarkLevel;
-// 		private readonly IValueRegisterField receiveWatermarkLevel;
-// 		private readonly IFlagRegisterField transmitWatermarkInterruptPending;
-// 		private readonly IFlagRegisterField receiveWatermarkInterruptPending;
-		private readonly IFlagRegisterField transmitWatermarkInterruptEnable;
-		private readonly IFlagRegisterField receiveWatermarkInterruptEnable;
-
 
 
 		public override Parity ParityBit
