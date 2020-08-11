@@ -42,3 +42,4 @@ The DoubleWordRegisterCollection object provides Reset, Read, Write methods that
         
 5) Base classes provide reset methods that could be overridden inside your peripheral class to reset the registers or update the interrupts. 
 
+6) All registers addresses used within a single .cs peripheral design file are relative to the registration point in the .repl file.
