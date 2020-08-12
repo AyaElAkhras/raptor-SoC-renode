@@ -24,7 +24,7 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
 {
     public class RaptorGPIO : BaseGPIOPort, IDoubleWordPeripheral, IKnownSize
     {
-    	public RaptorGPIO(Machine machine) : base(machine, NumberOfPins)
+    	public Raptor_GPIO(Machine machine) : base(machine, NumberOfPins)
         {
 		locker = new object();
 		pins = new Pin[NumberOfPins];
