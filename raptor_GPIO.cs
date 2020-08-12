@@ -22,7 +22,7 @@ using Antmicro.Renode.Utilities;
 
 namespace Antmicro.Renode.Peripherals.GPIOPort
 {
-    public class RaptorGPIO : BaseGPIOPort, IDoubleWordPeripheral, IKnownSize
+    public class Raptor_GPIO : BaseGPIOPort, IDoubleWordPeripheral, IKnownSize
     {
     	public Raptor_GPIO(Machine machine) : base(machine, NumberOfPins)
         {
