@@ -9,7 +9,7 @@ Raptor Peripherals
 
 ○ One SPI master controller (APB bus)
 
-○ One 8-bit GPIO port
+○ One GPIO port with 16 assignable digital inputs or outputs
 
 ○ One I2C master controller-standard mode
 
