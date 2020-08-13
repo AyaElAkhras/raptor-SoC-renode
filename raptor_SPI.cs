@@ -17,10 +17,52 @@ namespace Antmicro.Renode.Peripherals.SPI
 {
   public class raptor_SPI: SimpleContainer<ISPIPeripheral>, IDoubleWordPeripheral, IKnownSize
   {
+  /////////////////////////////////////////////////////////////////////
   
+    public raptor_SPI(Machine machine, uint transmitDepth, uint receiveDepth) : base(machine)
+    {
+      transmitBuffer = new Queue<ushort>();  // 16 bits 
+      receiveBuffer = new Queue<ushort>();
+
+      this.transmitDepth = transmitDepth;
+
+      var registersMap = new Dictionary<long, DoubleWordRegister>
+      {
+        
+        {(long)Registers.DataRegister, new DoubleWordRegister(this)
+                    .WithReservedBits(16, 16)
+                    .WithValueField(0, 16, valueProviderCallback: _ =>    // whenever the field is read, dequeue from receieve buffer 
+                    {
+                        if(!TryDequeueFromReceiveBuffer(out var data))
+                        {
+                            this.Log(LogLevel.Warning, "Trying to read from an empty FIFO");
+                            return 0;
+                        }
+
+                        return data;
+                    },
+                    writeCallback: (_, val) =>    // whenever the register is written to, enqueue to transmit buffer 
+                    {
+                        EnqueueToTransmitBuffer((ushort)val);
+                    }, name: "DATA")
+        },
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      };
+
+      registersCollection = new DoubleWordRegisterCollection(this, registersMap);
+            
+      }
+
   
-  
-  
+ 
   
     public uint ReadDoubleWord(long offset)
     {
