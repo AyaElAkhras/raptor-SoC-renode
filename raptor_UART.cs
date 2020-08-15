@@ -55,20 +55,6 @@ namespace Antmicro.Renode.Peripherals.UART
 				     .WithTag("RESERVED", 16, 15) // no implementation for the remaining fields 
 				}
 				
-// 				{(long)Registers.ReceiveData, new DoubleWordRegister(this)
-// 				    // the "EMPTY" flag MUST be declared before "DATA" value field because 'Count' value
-// 				    // might change as a result of dequeuing a character; otherwise if the queue was of
-// 				    // length 1, the read of this register would return both the character and "EMPTY" flag
-// 				    .WithFlag(31, valueProviderCallback: _ => Count == 0, name: "EMPTY")   // Count gets updated with the Queue size in UARTBase
-// 				    .WithValueField(0, 8, FieldMode.Read, readCallback: (_, __) => UpdateInterrupts(), valueProviderCallback: _ =>
-// 				    {
-// 					if(!TryGetCharacter(out var character))  // function in the UARTBase that returns False if the Queue is empty
-// 					{
-// 					    this.Log(LogLevel.Warning, "Trying to read data from empty receive fifo");
-// 					}
-// 					return character;
-// 				    }, name: "RXDATA")
-// 				 }
 			};			
 			
 			registers = new DoubleWordRegisterCollection(this, registersMap);
@@ -120,7 +106,8 @@ namespace Antmicro.Renode.Peripherals.UART
 
 		private readonly uint frequency;  // supposing this is the sysclk
 		private readonly uint fifo_size; // max size of the transmission fifo
-
+ 		private readonly DoubleWordRegisterCollection registers;
+		public GPIO IRQ { get; private set; }
 
 		public override Parity ParityBit
 		{
