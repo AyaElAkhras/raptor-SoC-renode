@@ -64,6 +64,11 @@ namespace Antmicro.Renode.Peripherals.UART
 			
 		}   // end of constructor
 		
+		protected override void QueueEmptied()
+		{
+			UpdateInterrupts();
+		}
+		
 		public uint ReadDoubleWord(long offset)   
 		{
 			lock(innerLock)
@@ -104,6 +109,8 @@ namespace Antmicro.Renode.Peripherals.UART
 			}
 		}
 
+        	public long Size => 0x100;
+	
 		private readonly uint frequency;  // supposing this is the sysclk
 		private readonly uint fifo_size; // max size of the transmission fifo
  		private readonly DoubleWordRegisterCollection registers;
