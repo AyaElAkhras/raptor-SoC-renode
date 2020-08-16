@@ -74,8 +74,8 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
 			 	var bits = BitHelper.GetBits(val);  // put the register bits in an array after they are written
 				for(var i = 0; i < bits.Length; i++)
 				{
-					if(bits[i] == 1)  // pullup
-						// todo
+					//if(bits[i] == 1)  // pullup
+						// todo: not currently supported
 				}
 				
 			 })
@@ -89,8 +89,8 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
 			 	var bits = BitHelper.GetBits(val);  // put the register bits in an array after they are written
 				for(var i = 0; i < bits.Length; i++)
 				{
-					if(bits[i] == 1)  // pulldown
-						// todo
+					//if(bits[i] == 1)  // pulldown
+						// todo: not currently supported
 				}
 			 })
 			  .WithTag("RESERVED", 16, 16)   
@@ -129,6 +129,8 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
                 registers.Reset();
             }
         }
+	
+	public long Size => 0x1000;
 	
 	private readonly DoubleWordRegisterCollection registers;
         private readonly object locker;   // for blocking until the process is done 
