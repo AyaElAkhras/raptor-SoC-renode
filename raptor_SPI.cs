@@ -71,7 +71,7 @@ namespace Antmicro.Renode.Peripherals.SPI
 //                         {
 //                             ClearBuffers();
 //                         }
-//                     }, name: "SS")  
+//                     }, name: "SS0")  
         },
         
         {(long)Registers.SPICFG, new DoubleWordRegister(this)
@@ -79,7 +79,8 @@ namespace Antmicro.Renode.Peripherals.SPI
         },
         
         {(long)Registers.SPISTATUS, new DoubleWordRegister(this)
-                    
+              .WithFlag(0, FieldMode.Read, valueProviderCallback: _ => true, name: "done")  // raises the done flag
+              .WithReservedBits(1, 31)
         }
           
       };
@@ -87,10 +88,49 @@ namespace Antmicro.Renode.Peripherals.SPI
       registersCollection = new DoubleWordRegisterCollection(this, registersMap);
             
     }
+    
+    public override void Register(ISPIPeripheral peripheral, NumberRegistrationPoint<int> registrationPoint)
+    {
+        if(registrationPoint.Address != 1)
+        {
+            throw new RegistrationException("SPI Master supports 1 slave at address 1");
+        }
 
-  
- 
-  
+        base.Register(peripheral, registrationPoint);
+    }
+
+    public override void Reset()
+    {
+        ClearBuffers();
+
+        registersCollection.Reset();
+    }
+    
+    private void ClearBuffers()
+    {
+      lock(innerLock)
+      {
+        receiveBuffer.DequeueAll();
+        transmitBuffer.DequeueAll();
+      } 
+    }
+
+    public bool TryDequeueFromReceiveBuffer(out ushort data)
+    {
+        if(!receiveBuffer.TryDequeue(out data))
+        {
+            data = 0;
+            return false;
+        }
+
+        return true;
+    }
+    
+    private void EnqueueToTransmitBuffer(ushort val)
+    {
+        transmitBuffer.Enqueue(val);
+    }
+
     public uint ReadDoubleWord(long offset)
     {
       return registersCollection.Read(offset);
@@ -101,13 +141,19 @@ namespace Antmicro.Renode.Peripherals.SPI
       registersCollection.Write(offset, value);
     }
     
-    private IFlagRegisterField start; // start or enabler of the SPI
+    private IFlagRegisterField start; // start enabler of the SPI
+   
+    private readonly Queue<ushort> receiveBuffer;
+    private readonly Queue<ushort> transmitBuffer;
+
+    private readonly DoubleWordRegisterCollection registersCollection;
+    private readonly object innerLock = new object();
     
     private enum Registers
     {
       SPIDATA = 0x0,
       SPICTRL = 0x4,  // 0:Start, 1:Slave Select (SS0 bit)
-      SPICFG = 0X8,
+      SPICFG = 0X8,   // 0: SPI Clock Polarization (CPOL) 1: SPI Clock Phase (CPHA) 2-9: SPI clock prescale 
       SPISTATUS = 0x10  // 0:Done
     }
   
