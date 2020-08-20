@@ -65,13 +65,23 @@ namespace Antmicro.Renode.Peripherals.SPI
                         }
                     }, name: "START")
                     
-//                     .WithFlag(1, , changeCallback: (_, val) =>
-//                     {
-//                         if(val == false)
-//                         {
-//                             ClearBuffers();
-//                         }
-//                     }, name: "SS0")  
+                    /*
+                    There is a single bit for slave select, if it's high, the slave is disconnected (active low), if it's low, the slave transmits data
+                    */
+                    
+                    .WithFlag(1, changeCallback: (_, val) => 
+                    {
+                        if(val == false)
+                        {
+                           TrySendData(1);   // 1 is the address of the single slave we have 
+                        }
+                        
+                        else
+                        {
+                          TryGetByAddress(1, out var slave);  // 1 is the address of the single slave we have 
+                          slave.FinishTransmission(); 
+                        }
+                    }, name: "SS0")  
         },
         
         {(long)Registers.SPICFG, new DoubleWordRegister(this)
@@ -140,6 +150,42 @@ namespace Antmicro.Renode.Peripherals.SPI
     {
       registersCollection.Write(offset, value);
     }
+        
+    private bool TrySendData(int slaveAddress)
+    {
+           /*
+            Note that SimpleContainer template class contains a dictionary that maps integers to SPI peripheral 
+            The following method returns back the SPI peripheral that is mapped to the passed slaveAddress
+           */
+           this.TryGetByAddress(slaveAddress, out var peripheral);  // to return the SPI slave peripheral connected to this address 
+           DoTransfer(peripheral, transmitBuffer.Count, readFromFifo: true, writeToFifo: true);  // read or write 
+            
+           return true;
+    }
+
+    private void DoTransfer(ISPIPeripheral peripheral, int size, bool readFromFifo, bool writeToFifo)
+    { 
+      this.Log(LogLevel.Noisy, "Doing an SPI transfer of size {0} bytes (reading from fifo: {1}, writing to fifo: {2})", size, readFromFifo, writeToFifo);
+      for(var i = 0; i < size; i++)
+      {
+        var dataToSlave = readFromFifo ? transmitBuffer.Dequeue() : (ushort)0;    // returns ushort variable dequeued 
+        ushort dataFromSlave = peripheral.Transmit((byte)dataToSlave);   // Transmit is a method in ISPIPeripheral class
+
+        this.Log(LogLevel.Noisy, "Sent 0x{0:X}, received 0x{1:X}", dataToSlave, dataFromSlave);
+
+        if(!writeToFifo)
+        {
+          continue;
+        }
+
+        lock(innerLock)
+        {
+          receiveBuffer.Enqueue(dataFromSlave);
+        }
+      }
+    }
+            
+    public long Size => 0x10000000;
     
     private IFlagRegisterField start; // start enabler of the SPI
    
