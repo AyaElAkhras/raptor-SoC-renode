@@ -1,5 +1,8 @@
 sram: Memory.MappedMemory @ sysbus 0x20000000
-    size: 0x000004000
+    size: 0x04000
+    
+flash: Memory.MappedMemory @ sysbus 0x00000000
+    size: 0x100000
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     priorityMask: 0xF0
