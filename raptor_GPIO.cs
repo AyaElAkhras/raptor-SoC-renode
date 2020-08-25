@@ -130,7 +130,7 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
             }
         }
 	
-	public long Size => 0x1000;
+	public long Size => 0x10000000;
 	
 	private readonly DoubleWordRegisterCollection registers;
         private readonly object locker;   // for blocking until the process is done 
