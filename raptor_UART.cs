@@ -109,7 +109,7 @@ namespace Antmicro.Renode.Peripherals.UART
 			}
 		}
 
-        	public long Size => 0x100;
+        	public long Size => 0x100000;
 	
 		private readonly uint frequency;  // supposing this is the sysclk
 		private readonly uint fifo_size; // max size of the transmission fifo
