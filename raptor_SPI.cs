@@ -16,12 +16,12 @@ namespace Antmicro.Renode.Peripherals.SPI
 {
   public class raptor_SPI: SimpleContainer<ISPIPeripheral>, IDoubleWordPeripheral, IKnownSize
   {  
-    public raptor_SPI(Machine machine, uint transmitDepth, uint receiveDepth) : base(machine)
+    public raptor_SPI(Machine machine/*, uint transmitDepth, uint receiveDepth*/) : base(machine)
     {
       transmitBuffer = new Queue<ushort>();  // 16 bits 
       receiveBuffer = new Queue<ushort>();
 
-      this.transmitDepth = transmitDepth;
+     // this.transmitDepth = transmitDepth;
 
       var registersMap = new Dictionary<long, DoubleWordRegister>
       {
