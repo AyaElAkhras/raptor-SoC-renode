@@ -21,15 +21,15 @@ Please note that the current work only supports the uart, SPI and GPIO port peri
 A simple firmware is provided to demonstrate and verify the usage of Renode to simulate Raptor SoC peripherlas. The currently provided application demonstrates the usage of the uart peripheral by sending characters of the phrase "Hello Raptor" over it.
 
 ### Needed Files
-○ raptor-example.c - C application that configures the uart register and sends characters over it
-○ cm0_startup.s - Startup code
-○ sections.ld - linker script
-○ Makefile
+* raptor-example.c - C application that configures the uart register and sends characters over it
+* cm0_startup.s - Startup code
+* sections.ld - linker script
+* Makefile
 
 ### Running the Firmware
 
 #### Required Installations
-The application requires arm-none-eabi toolchain which can be installed in Ubuntu using the following command:
+The application requires arm-none-eabi toolchain which can be installed in Ubuntu using the following command: \n
     *sudo apt-get install gcc-arm-none-eabi binutils-arm-none-eabi gdb-arm-none-eabi openocd*
     
 Instructions for installing Renode can be found through the following link:
