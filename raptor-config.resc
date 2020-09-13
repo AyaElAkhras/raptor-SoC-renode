@@ -3,12 +3,12 @@ using sysbus
 $bin?=@renode-example.elf
 $name?="Raptor"
 
-include $ORIGIN/raptor_UART.cs
-include $ORIGIN/raptor_GPIO.cs
+include @raptor_UART.cs
+include @raptor_GPIO.cs
 
 # Create Machine & Load config
 mach create $name
-machine LoadPlatformDescription $ORIGIN/raptor-platform.repl
+machine LoadPlatformDescription @raptor-platform.repl
 showAnalyzer uart0
 
 macro reset
