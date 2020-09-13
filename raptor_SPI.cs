@@ -188,6 +188,8 @@ namespace Antmicro.Renode.Peripherals.SPI
     public long Size => 0x10000000;
     
     private IFlagRegisterField start; // start enabler of the SPI
+    private readonly uint transmitDepth;
+
    
     private readonly Queue<ushort> receiveBuffer;
     private readonly Queue<ushort> transmitBuffer;
