@@ -1,6 +1,6 @@
 using sysbus
 
-$bin?=@renode-example.elf
+$bin?=@raptor-example.elf
 $name?="Raptor"
 
 include @raptor_UART.cs
