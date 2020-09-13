@@ -29,25 +29,35 @@ A simple firmware is provided to demonstrate and verify the usage of Renode to s
 ### Running the Firmware
 
 #### Required Installations
-The application requires arm-none-eabi toolchain which can be installed in Ubuntu using the following command:
-  *sudo apt-get install gcc-arm-none-eabi binutils-arm-none-eabi gdb-arm-none-eabi openocd*
+The application requires arm-none-eabi toolchain which can be installed in Ubuntu using the following command
+```
+  sudo apt-get install gcc-arm-none-eabi binutils-arm-none-eabi gdb-arm-none-eabi openocd
+```
     
-Instructions for installing Renode can be found through the following link:
+Instructions for installing Renode can be found through the following link
     https://renode.readthedocs.io/en/latest/introduction/installing.html
 
   
 #### Steps for Running the Firmware in Renode
 Clone this repo, then start Renode and pass to it the renode script (.resc) file that contains all the required commands to create a machine on the simulator, include the peripherals and load the elf file of the application
-  *git clone https://github.com/AyaElAkhras/raptor-SoC-renode.git*
-  *cd raptor-SoC-renode/*
-  *renode raptor-config.resc*
+```
+  git clone https://github.com/AyaElAkhras/raptor-SoC-renode.git
+  cd raptor-SoC-renode/
+  renode raptor-config.resc
+```
 
 Now to start running the application, in the Renode terminal type
-  *start*
+```
+  start
+```
 
 To stop running and close the machine, in the Renode terminal type
-  *quit*
+```
+  quit
+```
 
 To re-build the application
-  *make clean*
-  *make*
+```
+  make clean
+  make
+```
