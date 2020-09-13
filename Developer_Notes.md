@@ -1,4 +1,4 @@
-** This file contains some stuff I explored in the process of developing peripherals for raptor-SoC.. They could be helpful for any developer willing to add support for their SoC in Renode.. 
+## This file contains some stuff I explored in the process of developing peripherals for raptor-SoC.. They could be helpful for any developer willing to add support for their SoC in Renode.. 
 
 
 1. To allow the CPU to access the developed peripherals, Renode provides various interfaces that define methods allowing for CPU access. These fall under the family of `IBusPeripheral` interfaces which can be found in the following directory:
