@@ -1,4 +1,4 @@
-## This file contains some stuff I explored in the process of developing peripherals for raptor-SoC.. They could be helpful for any developer willing to add support for their SoC in Renode.. 
+#### This file contains some stuff I explored in the process of developing peripherals for raptor-SoC.. They could be helpful for any developer willing to add support for their SoC in Renode.. 
 
 
 1. To allow the CPU to access the developed peripherals, Renode provides various interfaces that define methods allowing for CPU access. These fall under the family of `IBusPeripheral` interfaces which can be found in the following directory:
@@ -25,20 +25,25 @@ The DoubleWordRegisterCollection object provides Reset, Read, Write methods that
 
 
 4. Following up on 3), for convenience the parameters passed to methods called over the DoubleWordRegister during the mapping of registers are defined below (these could be found in: renode/src/Infrastructure/src/Emulator/Main/Core/Structure/Registers/PeripheralRegister.cs
+```
+<param name="position">Offset in the register.</param>
 
-/// <param name="position">Offset in the register.</param>
-/// <param name="width">Maximum width of the value, in terms of binary representation.</param> 
-/// <param name="mode">Access modifiers of this field.</param>
-/// <param name="readCallback">Method to be called whenever the containing register is read. The first parameter is the value of this field before read,
-/// the second parameter is the value after read. Note that it will also be called for unreadable fields.</param>
-/// <param name="writeCallback">Method to be called whenever the containing register is written to. The first parameter is the value of this field before write,
-/// the second parameter is the value written (without any modification). Note that it will also be called for unwrittable fields.</param>
-/// <param name="changeCallback">Method to be called whenever this field's value is changed, either due to read or write. The first parameter is the value of this field before change,
-/// the second parameter is the value after change. Note that it will also be called for unwrittable fields.</param>
-/// <param name="valueProviderCallback">Method to be called whenever this field is read. The value passed is the current field's value, that will be overwritten by
-/// the value returned from it. This returned value is eventually passed as the first parameter of <paramref name="readCallback"/>.</param>
-/// <param name="name">Ignored parameter, for convenience. Treat it as a comment.</param>
-        
+<param name="width">Maximum width of the value, in terms of binary representation.</param>
+
+<param name="mode">Access modifiers of this field.</param>
+
+<param name="readCallback">Method to be called whenever the containing register is read. The first parameter is the value of this field before read,
+the second parameter is the value after read. Note that it will also be called for unreadable fields.</param>
+
+<param name="writeCallback">Method to be called whenever the containing register is written to. The first parameter is the value of this field before write,
+the second parameter is the value written (without any modification). Note that it will also be called for unwrittable fields.</param>
+
+<param name="changeCallback">Method to be called whenever this field's value is changed, either due to read or write. The first parameter is the value of this field before change,the second parameter is the value after change. Note that it will also be called for unwrittable fields.</param>
+
+<param name="valueProviderCallback">Method to be called whenever this field is read. The value passed is the current field's value, that will be overwritten by the value returned from it. This returned value is eventually passed as the first parameter of <paramref name="readCallback"/>.</param>
+
+<param name="name">Ignored parameter, for convenience. Treat it as a comment.</param>
+```
         
 5. Base classes provide reset methods that could be overridden inside your peripheral class to reset the registers or update the interrupts. 
 
