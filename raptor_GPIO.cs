@@ -57,7 +57,7 @@ namespace Antmicro.Renode.Peripherals.GPIOPort
 			 	var bits = BitHelper.GetBits(val);  // put the register bits in an array after they are written
 				for(var i = 0; i < bits.Length; i++)
 				{
-					if(bits[i] == 1)  // input
+					if(bits[i])  // input
 						pins[i].pinOperation =  Operation.Read;
 					else  // output
 						pins[i].pinOperation =  Operation.Write;
